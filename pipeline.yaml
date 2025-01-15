@@ -1,0 +1,714 @@
+# PIPELINE DEFINITION
+# Name: autosxs-template
+# Description: Determines the SxS winrate between two models.
+# Inputs:
+#    autorater_prompt_parameters: dict
+#    bigquery_destination_prefix: str [Default: '']
+#    encryption_spec_key_name: str [Default: '']
+#    evaluation_dataset: str
+#    experimental_args: dict [Default: {}]
+#    human_preference_column: str [Default: '']
+#    id_columns: list
+#    judgments_format: str [Default: 'jsonl']
+#    location: str [Default: '{{$.pipeline_google_cloud_location}}']
+#    model_a: str [Default: '']
+#    model_a_parameters: dict [Default: {}]
+#    model_a_prompt_parameters: dict [Default: {}]
+#    model_b: str [Default: '']
+#    model_b_parameters: dict [Default: {}]
+#    model_b_prompt_parameters: dict [Default: {}]
+#    project: str [Default: '{{$.pipeline_google_cloud_project_id}}']
+#    response_column_a: str [Default: '']
+#    response_column_b: str [Default: '']
+#    task: str
+# Outputs:
+#    evaluation_count: int
+#    evaluation_dataset_path: str
+#    model_a_evaluation_resource_name: str
+#    model_b_evaluation_resource_name: str
+components:
+  comp-batch-prediction-pairwise:
+    executorLabel: exec-batch-prediction-pairwise
+    inputDefinitions:
+      parameters:
+        autorater_prompt_parameters:
+          description: 'Map of autorater prompt template parameters to
+
+            columns or templates.'
+          parameterType: STRUCT
+        display_name:
+          description: Display name for the batch prediction job.
+          parameterType: STRING
+        encryption_spec_key_name:
+          defaultValue: ''
+          description: 'Customer-managed encryption key options. If this
+
+            is set, then all resources created by the component will be encrypted
+            with
+
+            the provided encryption key.'
+          isOptional: true
+          parameterType: STRING
+        evaluation_dataset:
+          description: 'GCS or BigQuery URIs representing a dataset of prompts
+
+            and responses.'
+          parameterType: STRING
+        experimental_args:
+          defaultValue: {}
+          description: Experimentally released arguments. Subject to change.
+          isOptional: true
+          parameterType: STRUCT
+        human_preference_column:
+          defaultValue: ''
+          description: 'The column containing ground truths. The default
+
+            value is an empty string if not be provided by users.'
+          isOptional: true
+          parameterType: STRING
+        id_columns:
+          description: The columns which distinguish unique evaluation examples.
+          parameterType: LIST
+        location:
+          defaultValue: '{{$.pipeline_google_cloud_location}}'
+          description: Location used to run batch prediction jobs.
+          isOptional: true
+          parameterType: STRING
+        model_a:
+          defaultValue: ''
+          description: 'A fully-qualified model resource name
+
+            (`projects/{project}/locations/{location}/models/{model}@{version}`) or
+
+            publisher model resource name (`publishers/{publisher}/models/{model}`).
+
+            This parameter is optional if Model A responses are specified.'
+          isOptional: true
+          parameterType: STRING
+        model_a_parameters:
+          defaultValue: {}
+          description: 'The parameters that govern the predictions from model A,
+
+            such as temperature or maximum output tokens.'
+          isOptional: true
+          parameterType: STRUCT
+        model_a_prompt_parameters:
+          defaultValue: {}
+          description: 'Map of model A prompt template parameters to
+
+            columns or templates.'
+          isOptional: true
+          parameterType: STRUCT
+        model_b:
+          defaultValue: ''
+          description: 'A fully-qualified model resource name
+
+            (`projects/{project}/locations/{location}/models/{model}@{version}`) or
+
+            publisher model resource name (`publishers/{publisher}/models/{model}`).
+
+            This parameter is optional if Model B responses are specified.'
+          isOptional: true
+          parameterType: STRING
+        model_b_parameters:
+          defaultValue: {}
+          description: 'The parameters that govern the predictions from model B,
+
+            such as temperature or maximum output tokens.'
+          isOptional: true
+          parameterType: STRUCT
+        model_b_prompt_parameters:
+          defaultValue: {}
+          description: 'Map of model B prompt template parameters to
+
+            columns or templates.'
+          isOptional: true
+          parameterType: STRUCT
+        project:
+          defaultValue: '{{$.pipeline_google_cloud_project_id}}'
+          description: Project used to run batch prediction jobs.
+          isOptional: true
+          parameterType: STRING
+        response_column_a:
+          description: The column containing responses for model a.
+          parameterType: STRING
+        response_column_b:
+          description: The column containing responses for model b.
+          parameterType: STRING
+        task:
+          description: Task to evaluate.
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        preprocessed_evaluation_dataset:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+          description: 'Dataset of the table containing the inputs
+
+            expected by the Arbiter.'
+      parameters:
+        gcp_resources:
+          description: Tracker for GCP resources created by this component.
+          parameterType: STRING
+        metadata:
+          parameterType: STRUCT
+        preprocessed_evaluation_dataset_uri:
+          description: 'URI of the table containing the inputs
+
+            expected by the Arbiter.'
+          parameterType: STRING
+  comp-model-evaluation-text-generation-pairwise:
+    executorLabel: exec-model-evaluation-text-generation-pairwise
+    inputDefinitions:
+      parameters:
+        encryption_spec_key_name:
+          defaultValue: ''
+          description: 'Customer-managed encryption key options. If this
+
+            is set, then all resources created by the component will be encrypted
+            with
+
+            the provided encryption key.'
+          isOptional: true
+          parameterType: STRING
+        evaluation_dataset:
+          defaultValue: ''
+          description: Path to the evaluation dataset.
+          isOptional: true
+          parameterType: STRING
+        evaluation_dataset_metadata:
+          defaultValue: ''
+          description: AutoSxS metrics metadata json string.
+          isOptional: true
+          parameterType: STRING
+        human_preference_column:
+          defaultValue: ''
+          description: 'The column containing ground truths. The default
+
+            value is an empty string if not be provided by users.'
+          isOptional: true
+          parameterType: STRING
+        judgments_dir:
+          description: Path to store the Judgments.
+          parameterType: STRING
+        location:
+          defaultValue: '{{$.pipeline_google_cloud_location}}'
+          description: Location to upload evaluation metrics to.
+          isOptional: true
+          parameterType: STRING
+        model_a:
+          defaultValue: ''
+          description: Resource path for Model A.
+          isOptional: true
+          parameterType: STRING
+        model_b:
+          defaultValue: ''
+          description: Resource path for Model B.
+          isOptional: true
+          parameterType: STRING
+        project:
+          defaultValue: '{{$.pipeline_google_cloud_project_id}}'
+          description: Project to upload evaluation metrics to.
+          isOptional: true
+          parameterType: STRING
+        task:
+          defaultValue: ''
+          description: Task that was used for this AutoSxS run.
+          isOptional: true
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        autosxs_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+      parameters:
+        evaluation_count_path:
+          parameterType: NUMBER_INTEGER
+        evaluation_dataset_path:
+          parameterType: STRING
+        gcp_resources:
+          parameterType: STRING
+        model_a_evaluation_path:
+          parameterType: STRING
+        model_b_evaluation_path:
+          parameterType: STRING
+  comp-online-evaluation-pairwise:
+    executorLabel: exec-online-evaluation-pairwise
+    inputDefinitions:
+      parameters:
+        autorater_prompt_parameters:
+          defaultValue: {}
+          description: 'Map of autorater prompt template parameters to
+
+            columns or templates.'
+          isOptional: true
+          parameterType: STRUCT
+        bigquery_destination_prefix:
+          defaultValue: ''
+          description: 'BigQuery table to write judgments to if the
+
+            specified format is ''bigquery''.'
+          isOptional: true
+          parameterType: STRING
+        encryption_spec_key_name:
+          defaultValue: ''
+          description: 'Customer-managed encryption key options. If this
+
+            is set, then all resources created by the component will be encrypted
+            with
+
+            the provided encryption key.'
+          isOptional: true
+          parameterType: STRING
+        experimental_args:
+          defaultValue: {}
+          description: Experimentally released arguments. Subject to change.
+          isOptional: true
+          parameterType: STRUCT
+        human_preference_column:
+          defaultValue: ''
+          description: 'Human preference column included in our inference
+
+            output.'
+          isOptional: true
+          parameterType: STRING
+        id_columns:
+          description: The columns which distinguish unique evaluation examples.
+          parameterType: LIST
+        inference_output_uri:
+          description: Directory of model A's inference output.
+          parameterType: STRING
+        judgments_format:
+          defaultValue: jsonl
+          description: 'The format to write judgments to. Can be either ''json'' or
+
+            ''bigquery''.'
+          isOptional: true
+          parameterType: STRING
+        location:
+          defaultValue: '{{$.pipeline_google_cloud_location}}'
+          description: Location used to make autorater predictions.
+          isOptional: true
+          parameterType: STRING
+        project:
+          defaultValue: '{{$.pipeline_google_cloud_project_id}}'
+          description: Project used to make autorater predictions.
+          isOptional: true
+          parameterType: STRING
+        task:
+          description: 'Evaluation task in the form {task}@{version}. task can be
+            one of
+
+            "summarization", "question_answering". Version is an integer with 3 digits
+
+            or "latest". Ex: summarization@001 or question_answering@latest.'
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        error_messages:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+          description: Error messages of failed samples of each evaluation example.
+        judgments:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+          description: Individual judgments used to calculate the win rates.
+      parameters:
+        gcp_resources:
+          description: Tracker for GCP resources created by this component.
+          parameterType: STRING
+        judgments_uri:
+          description: URI of the Judgments Artifact.
+          parameterType: STRING
+        metadata:
+          description: Computed runtime metrics metadata from this component.
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-batch-prediction-pairwise:
+      container:
+        args:
+        - --type
+        - CustomJob
+        - --payload
+        - '{"display_name": "batch_prediction_pairwise", "job_spec": {"worker_pool_specs":
+          [{"replica_count": "1", "machine_spec": {"machine_type": "n1-standard-4"},
+          "container_spec": {"image_uri": "us-docker.pkg.dev/vertex-ai-restricted/rlhf/rlhf_autosxs:20240818_1707",
+          "args": ["--", "batch_prediction_sxs", "--display_name={{$.inputs.parameters[''display_name'']}}",
+          "--evaluation_dataset={{$.inputs.parameters[''evaluation_dataset'']}}",
+          "--id_columns={{$.inputs.parameters[''id_columns''].json_escape[0]}}", "--task={{$.inputs.parameters[''task'']}}",
+          "--project={{$.inputs.parameters[''project'']}}", "--location={{$.inputs.parameters[''location'']}}",
+          "--model_a={{$.inputs.parameters[''model_a'']}}", "--model_b={{$.inputs.parameters[''model_b'']}}",
+          "--model_a_prompt_parameters={{$.inputs.parameters[''model_a_prompt_parameters''].json_escape[0]}}",
+          "--model_b_prompt_parameters={{$.inputs.parameters[''model_b_prompt_parameters''].json_escape[0]}}",
+          "--autorater_prompt_parameters={{$.inputs.parameters[''autorater_prompt_parameters''].json_escape[0]}}",
+          "--response_column_a={{$.inputs.parameters[''response_column_a'']}}", "--response_column_b={{$.inputs.parameters[''response_column_b'']}}",
+          "--model_a_parameters={{$.inputs.parameters[''model_a_parameters''].json_escape[0]}}",
+          "--model_b_parameters={{$.inputs.parameters[''model_b_parameters''].json_escape[0]}}",
+          "--experimental_args={{$.inputs.parameters[''experimental_args''].json_escape[0]}}",
+          "--human_preference_column={{$.inputs.parameters[''human_preference_column'']}}",
+          "--staging_dir={{$.pipeline_root}}", "--preprocessed_evaluation_dataset_uri={{$.outputs.parameters[''preprocessed_evaluation_dataset_uri''].output_file}}",
+          "--metadata_path={{$.outputs.parameters[''metadata''].output_file}}", "--kms_key_name={{$.inputs.parameters[''encryption_spec_key_name'']}}",
+          "--gcp_resources_path={{$.outputs.parameters[''gcp_resources''].output_file}}",
+          "--executor_input={{$.json_escape[1]}}"]}}]}, "encryption_spec": {"kms_key_name":
+          "{{$.inputs.parameters[''encryption_spec_key_name'']}}"}}'
+        - --project
+        - '{{$.inputs.parameters[''project'']}}'
+        - --location
+        - '{{$.inputs.parameters[''location'']}}'
+        - --gcp_resources
+        - '{{$.outputs.parameters[''gcp_resources''].output_file}}'
+        command:
+        - python3
+        - -u
+        - -m
+        - google_cloud_pipeline_components.container.v1.custom_job.launcher
+        image: gcr.io/ml-pipeline/google-cloud-pipeline-components:2.18.0
+    exec-model-evaluation-text-generation-pairwise:
+      container:
+        args:
+        - --type
+        - CustomJob
+        - --payload
+        - '{"display_name": "model_evaluation_text_generation_pairwise", "job_spec":
+          {"worker_pool_specs": [{"replica_count": "1", "machine_spec": {"machine_type":
+          "n1-standard-4"}, "container_spec": {"image_uri": "us-docker.pkg.dev/vertex-ai-restricted/rlhf/rlhf_autosxs:20240818_1707",
+          "args": ["--", "autosxs_metrics", "--judgments_dir={{$.inputs.parameters[''judgments_dir'']}}",
+          "--human_preference_column={{$.inputs.parameters[''human_preference_column'']}}",
+          "--project={{$.inputs.parameters[''project'']}}", "--location={{$.inputs.parameters[''location'']}}",
+          "--executor_input={{$.json_escape[1]}}", "--model_a={{$.inputs.parameters[''model_a'']}}",
+          "--model_b={{$.inputs.parameters[''model_b'']}}", "--model_a_evaluation_path={{$.outputs.parameters[''model_a_evaluation_path''].output_file}}",
+          "--model_b_evaluation_path={{$.outputs.parameters[''model_b_evaluation_path''].output_file}}",
+          "--evaluation_count_path={{$.outputs.parameters[''evaluation_count_path''].output_file}}",
+          "--evaluation_dataset_path={{$.outputs.parameters[''evaluation_dataset_path''].output_file}}",
+          "--evaluation_dataset={{$.inputs.parameters[''evaluation_dataset'']}}",
+          "--evaluation_dataset_metadata={{$.inputs.parameters[''evaluation_dataset_metadata''].json_escape[0]}}",
+          "--task={{$.inputs.parameters[''task'']}}"]}}]}, "encryption_spec": {"kms_key_name":
+          "{{$.inputs.parameters[''encryption_spec_key_name'']}}"}}'
+        - --project
+        - '{{$.inputs.parameters[''project'']}}'
+        - --location
+        - '{{$.inputs.parameters[''location'']}}'
+        - --gcp_resources
+        - '{{$.outputs.parameters[''gcp_resources''].output_file}}'
+        command:
+        - python3
+        - -u
+        - -m
+        - google_cloud_pipeline_components.container.v1.custom_job.launcher
+        image: gcr.io/ml-pipeline/google-cloud-pipeline-components:2.18.0
+    exec-online-evaluation-pairwise:
+      container:
+        args:
+        - --type
+        - CustomJob
+        - --payload
+        - '{"display_name": "online_evaluation_pairwise", "job_spec": {"worker_pool_specs":
+          [{"replica_count": "1", "machine_spec": {"machine_type": "n1-standard-4"},
+          "container_spec": {"image_uri": "us-docker.pkg.dev/vertex-ai-restricted/rlhf/rlhf_autosxs:20240818_1707",
+          "args": ["--", "arbiter", "--inference_output_uri={{$.inputs.parameters[''inference_output_uri'']}}",
+          "--human_preference_column={{$.inputs.parameters[''human_preference_column'']}}",
+          "--task={{$.inputs.parameters[''task'']}}", "--project={{$.inputs.parameters[''project'']}}",
+          "--location={{$.inputs.parameters[''location'']}}", "--prediction_endpoint_overrides=",
+          "--output_dir={{$.pipeline_root}}", "--judgments_uri={{$.outputs.parameters[''judgments_uri''].output_file}}",
+          "--judgments_format={{$.inputs.parameters[''judgments_format'']}}", "--bigquery_destination_prefix={{$.inputs.parameters[''bigquery_destination_prefix'']}}",
+          "--id_columns={{$.inputs.parameters[''id_columns''].json_escape[0]}}", "--experimental_args={{$.inputs.parameters[''experimental_args''].json_escape[0]}}",
+          "--executor_input={{$.json_escape[1]}}", "--kms_key_name={{$.inputs.parameters[''encryption_spec_key_name'']}}",
+          "--metadata_path={{$.outputs.parameters[''metadata''].output_file}}", "--autorater_prompt_parameters={{$.inputs.parameters[''autorater_prompt_parameters''].json_escape[0]}}"]}}]},
+          "encryption_spec": {"kms_key_name": "{{$.inputs.parameters[''encryption_spec_key_name'']}}"}}'
+        - --project
+        - '{{$.inputs.parameters[''project'']}}'
+        - --location
+        - '{{$.inputs.parameters[''location'']}}'
+        - --gcp_resources
+        - '{{$.outputs.parameters[''gcp_resources''].output_file}}'
+        command:
+        - python3
+        - -u
+        - -m
+        - google_cloud_pipeline_components.container.v1.custom_job.launcher
+        image: gcr.io/ml-pipeline/google-cloud-pipeline-components:2.18.0
+pipelineInfo:
+  description: Determines the SxS winrate between two models.
+  name: autosxs-template
+root:
+  dag:
+    outputs:
+      parameters:
+        evaluation_count:
+          valueFromParameter:
+            outputParameterKey: evaluation_count_path
+            producerSubtask: model-evaluation-text-generation-pairwise
+        evaluation_dataset_path:
+          valueFromParameter:
+            outputParameterKey: evaluation_dataset_path
+            producerSubtask: model-evaluation-text-generation-pairwise
+        model_a_evaluation_resource_name:
+          valueFromParameter:
+            outputParameterKey: model_a_evaluation_path
+            producerSubtask: model-evaluation-text-generation-pairwise
+        model_b_evaluation_resource_name:
+          valueFromParameter:
+            outputParameterKey: model_b_evaluation_path
+            producerSubtask: model-evaluation-text-generation-pairwise
+    tasks:
+      batch-prediction-pairwise:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-batch-prediction-pairwise
+        inputs:
+          parameters:
+            autorater_prompt_parameters:
+              componentInputParameter: autorater_prompt_parameters
+            display_name:
+              runtimeValue:
+                constant: autosxs-{{$.pipeline_job_uuid}}-{{$.pipeline_task_uuid}}
+            encryption_spec_key_name:
+              componentInputParameter: encryption_spec_key_name
+            evaluation_dataset:
+              componentInputParameter: evaluation_dataset
+            experimental_args:
+              componentInputParameter: experimental_args
+            human_preference_column:
+              componentInputParameter: human_preference_column
+            id_columns:
+              componentInputParameter: id_columns
+            location:
+              componentInputParameter: location
+            model_a:
+              componentInputParameter: model_a
+            model_a_parameters:
+              componentInputParameter: model_a_parameters
+            model_a_prompt_parameters:
+              componentInputParameter: model_a_prompt_parameters
+            model_b:
+              componentInputParameter: model_b
+            model_b_parameters:
+              componentInputParameter: model_b_parameters
+            model_b_prompt_parameters:
+              componentInputParameter: model_b_prompt_parameters
+            project:
+              componentInputParameter: project
+            response_column_a:
+              componentInputParameter: response_column_a
+            response_column_b:
+              componentInputParameter: response_column_b
+            task:
+              componentInputParameter: task
+        taskInfo:
+          name: AutoSxS Batch Prediction
+      model-evaluation-text-generation-pairwise:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-model-evaluation-text-generation-pairwise
+        dependentTasks:
+        - online-evaluation-pairwise
+        inputs:
+          parameters:
+            encryption_spec_key_name:
+              componentInputParameter: encryption_spec_key_name
+            evaluation_dataset:
+              componentInputParameter: evaluation_dataset
+            evaluation_dataset_metadata:
+              taskOutputParameter:
+                outputParameterKey: metadata
+                producerTask: online-evaluation-pairwise
+            human_preference_column:
+              componentInputParameter: human_preference_column
+            judgments_dir:
+              taskOutputParameter:
+                outputParameterKey: judgments_uri
+                producerTask: online-evaluation-pairwise
+            location:
+              componentInputParameter: location
+            model_a:
+              componentInputParameter: model_a
+            model_b:
+              componentInputParameter: model_b
+            project:
+              componentInputParameter: project
+            task:
+              componentInputParameter: task
+        taskInfo:
+          name: AutoSxS Metrics
+      online-evaluation-pairwise:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-online-evaluation-pairwise
+        dependentTasks:
+        - batch-prediction-pairwise
+        inputs:
+          parameters:
+            autorater_prompt_parameters:
+              componentInputParameter: autorater_prompt_parameters
+            bigquery_destination_prefix:
+              componentInputParameter: bigquery_destination_prefix
+            encryption_spec_key_name:
+              componentInputParameter: encryption_spec_key_name
+            experimental_args:
+              componentInputParameter: experimental_args
+            human_preference_column:
+              componentInputParameter: human_preference_column
+            id_columns:
+              componentInputParameter: id_columns
+            inference_output_uri:
+              taskOutputParameter:
+                outputParameterKey: preprocessed_evaluation_dataset_uri
+                producerTask: batch-prediction-pairwise
+            judgments_format:
+              componentInputParameter: judgments_format
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project
+            task:
+              componentInputParameter: task
+        taskInfo:
+          name: AutoSxS Autorater
+  inputDefinitions:
+    parameters:
+      autorater_prompt_parameters:
+        description: 'Map of autorater prompt parameters to columns or templates.
+          The expected parameters are: `inference_instruction` (details on how to
+          perform a task) and `inference_context` (content to reference to perform
+          the task). As an example, `{''inference_context'': {''column'': ''my_prompt''}}`
+          uses the evaluation dataset''s `my_prompt` column for the AutoRater''s context.'
+        parameterType: STRUCT
+      bigquery_destination_prefix:
+        defaultValue: ''
+        description: BigQuery table to write judgments to if the specified format
+          is 'bigquery'.
+        isOptional: true
+        parameterType: STRING
+      encryption_spec_key_name:
+        defaultValue: ''
+        description: Customer-managed encryption key options. If this is set, then
+          all resources created by the pipeline will be encrypted with the provided
+          encryption key.
+        isOptional: true
+        parameterType: STRING
+      evaluation_dataset:
+        description: A BigQuery table or comma-separated list of GCS paths to a JSONL
+          dataset containing evaluation examples.
+        parameterType: STRING
+      experimental_args:
+        defaultValue: {}
+        description: Experimentally released arguments. Subject to change.
+        isOptional: true
+        parameterType: STRUCT
+      human_preference_column:
+        defaultValue: ''
+        description: The column containing ground truth winners for each example.
+          Providing this parameter adds additional metrics for checking the AutoRater
+          alignment with human preferences.
+        isOptional: true
+        parameterType: STRING
+      id_columns:
+        description: The columns which distinguish unique evaluation examples.
+        parameterType: LIST
+      judgments_format:
+        defaultValue: jsonl
+        description: The format to write judgments to. Can be either `[json, bigquery]`.
+        isOptional: true
+        parameterType: STRING
+      location:
+        defaultValue: '{{$.pipeline_google_cloud_location}}'
+        description: Location used to run custom jobs. This should be the same location
+          used to run the pipeline.
+        isOptional: true
+        parameterType: STRING
+      model_a:
+        defaultValue: ''
+        description: A fully-qualified model resource name (`projects/{project}/locations/{location}/models/{model}@{version}`)
+          or publisher model resource name (`publishers/{publisher}/models/{model}`).  This
+          parameter is optional if Model A responses are specified.
+        isOptional: true
+        parameterType: STRING
+      model_a_parameters:
+        defaultValue: {}
+        description: The parameters that govern the predictions from model A, such
+          as temperature or maximum output tokens.
+        isOptional: true
+        parameterType: STRUCT
+      model_a_prompt_parameters:
+        defaultValue: {}
+        description: 'Map of Model A prompt template parameters to columns or templates.
+          This parameter is optional if Model A predictions are predefined. Example
+          - `{''prompt'': {''column'': ''my_prompt''}}` uses the evaluation dataset''s
+          `my_prompt` column for the prompt parameter named `prompt`.'
+        isOptional: true
+        parameterType: STRUCT
+      model_b:
+        defaultValue: ''
+        description: A fully-qualified model resource name (`projects/{project}/locations/{location}/models/{model}@{version}`)
+          or publisher model resource name (`publishers/{publisher}/models/{model}`).  This
+          parameter is optional if Model B responses are specified.
+        isOptional: true
+        parameterType: STRING
+      model_b_parameters:
+        defaultValue: {}
+        description: The parameters that govern the predictions from model B, such
+          as temperature or maximum output tokens.
+        isOptional: true
+        parameterType: STRUCT
+      model_b_prompt_parameters:
+        defaultValue: {}
+        description: 'Map of Model B prompt template parameters to columns or templates.
+          This parameter is optional if Model B predictions are predefined. Example
+          - `{''prompt'': {''column'': ''my_prompt''}}` uses the evaluation dataset''s
+          `my_prompt` column for the prompt parameter named `prompt`.'
+        isOptional: true
+        parameterType: STRUCT
+      project:
+        defaultValue: '{{$.pipeline_google_cloud_project_id}}'
+        description: Project used to run custom jobs. This should be the same project
+          used to run the pipeline.
+        isOptional: true
+        parameterType: STRING
+      response_column_a:
+        defaultValue: ''
+        description: Either the name of a column in the evaluation dataset containing
+          predefined predictions, or the name of the column in the Model A output
+          containing predictions. If no value is provided, the correct model output
+          column name will attempt to be inferred.
+        isOptional: true
+        parameterType: STRING
+      response_column_b:
+        defaultValue: ''
+        description: Either the name of a column in the evaluation dataset containing
+          predefined predictions, or the name of the column in the Model B output
+          containing predictions. If no value is provided, the correct model output
+          column name will attempt to be inferred.
+        isOptional: true
+        parameterType: STRING
+      task:
+        description: 'Evaluation task in the form `{task}@{version}`. task can be
+          one of `[summarization, question_answering]`. Version is an integer with
+          3 digits or "latest". Ex: `summarization@001` or `question_answering@latest`.'
+        parameterType: STRING
+  outputDefinitions:
+    parameters:
+      evaluation_count:
+        description: The count of how many evaluations were included for this AutoSxS
+          run.
+        parameterType: NUMBER_INTEGER
+      evaluation_dataset_path:
+        description: The path to the overall evaluation dataset including judgments.
+        parameterType: STRING
+      model_a_evaluation_resource_name:
+        description: The path to write the ModelEvaluation for Model A to if Model
+          A is a ModelRegistry Model.
+        parameterType: STRING
+      model_b_evaluation_resource_name:
+        description: The path to write the ModelEvaluation for Model B to if Model
+          B is a ModelRegistry Model.
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.10.1
