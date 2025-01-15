@@ -1,5 +1,14 @@
 ## Gen AI Finetuned Flipkart
 
+**Package Dependencies**
+
+*   <a href="https://www.python.org/downloads/">Python 3.11</a>
+*   <a href="https://cloud.google.com/sdk?hl=en">Google Cloud SDK</a>
+*   <a href="https://cloud.google.com/vertex-ai/docs/python-sdk/use-vertex-ai-python-sdk">Vertex AI Python SDK</a>
+*   <a href="https://cloud.google.com/storage/docs/reference/libraries#client-libraries-install-python">Google Cloud Storage</a>
+*   <a href="https://pandas.pydata.org/">Pandas</a>
+*   <a href="https://numpy.org/">Numpy</a> 
+
 **Introduction**
 
 This README provides a step-by-step guide to fine-tuning a Generative AI model using Google Cloud Vertex AI. The goal is to enhance the model's performance for specific tasks by providing custom training data. We will be using Gemini 1.5 flash as a base model.
